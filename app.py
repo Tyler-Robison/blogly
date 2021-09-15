@@ -49,12 +49,14 @@ def create_users():
     profile_pic = request.form['profile-img']
     profile_pic = profile_pic if profile_pic else None
 
-    try:
-        User.add_user(first_name, last_name, profile_pic)
-    except:
-        db.session.rollback() 
-        flash('First and Last name must be unique')
-        return redirect('/users/new')    
+    User.add_user(first_name, last_name, profile_pic)
+
+    # try:
+    #     User.add_user(first_name, last_name, profile_pic)
+    # except:
+    #     db.session.rollback() 
+    #     flash('First and Last name must be unique')
+    #     return redirect('/users/new')    
 
     flash('User created!')
     return redirect('/users')
