@@ -19,7 +19,14 @@ class User(db.Model):
     def add_user(cls, first_name, last_name, profile_pic):
         """adds a new user"""
 
+        if first_name == '':
+            first_name = None
+
+        if last_name == '':
+            last_name = None
+
         new_user = User(first_name = first_name, last_name = last_name, profile_pic = profile_pic)
+
 
      
         db.session.add(new_user)
@@ -38,11 +45,11 @@ class User(db.Model):
                     primary_key = True,
                     autoincrement = True)
 
-    first_name = db.Column(db.String(20),
+    first_name = db.Column(db.Text,
                     nullable=False,
                     unique=True)        
 
-    last_name = db.Column(db.String(20),
+    last_name = db.Column(db.Text,
                     nullable=False,
                     unique=True)   
 
@@ -51,6 +58,12 @@ class User(db.Model):
 
     def edit_user(self, first_name, last_name, profile_pic):
         """Edits current user"""
+
+        if first_name == '':
+            first_name = None
+
+        if last_name == '':
+            last_name = None
 
         if profile_pic == None:
             profile_pic = 'https://images.freeimages.com/images/large-previews/b3d/flowers-1375316.jpg'

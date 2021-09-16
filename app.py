@@ -49,14 +49,14 @@ def create_users():
     profile_pic = request.form['profile-img']
     profile_pic = profile_pic if profile_pic else None
 
-    User.add_user(first_name, last_name, profile_pic)
+    # User.add_user(first_name, last_name, profile_pic)
 
-    # try:
-    #     User.add_user(first_name, last_name, profile_pic)
-    # except:
-    #     db.session.rollback() 
-    #     flash('First and Last name must be unique')
-    #     return redirect('/users/new')    
+    try:
+        User.add_user(first_name, last_name, profile_pic)
+    except:
+        db.session.rollback() 
+        flash('First and Last name must be filled out and unique')
+        return redirect('/users/new')    
 
     flash('User created!')
     return redirect('/users')
@@ -76,7 +76,7 @@ def user_detail(user_id):
 @app.route('/users/<user_id>/edit')
 def edit_user(user_id):
     """Displays current user details and allows you to edit"""
-
+    
     user = User.query.filter(User.id == user_id).first()
 
     return render_template('edit.html', user=user)
@@ -93,9 +93,16 @@ def process_edit_user(user_id):
 
     # import pdb
     # pdb.set_trace()
-
     user = User.query.filter(User.id == user_id).first()
-    user.edit_user(first_name, last_name, profile_pic)
+
+    try:
+        user.edit_user(first_name, last_name, profile_pic)
+    except:
+        db.session.rollback() 
+        flash('First and Last name must be filled out and unique')
+        return redirect(f'/users/{user_id}/edit') 
+
+    
 
     return redirect('/users')
 
