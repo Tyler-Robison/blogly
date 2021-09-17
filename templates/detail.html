@@ -20,11 +20,18 @@
     <button>Delete User</button>
 </form>
 
+<!-- add ul containing posts -->
+<ul>
+    {%for post in post_list%}
+    <li> <a href="/posts/{{post.id}}">{{post.title}}</a></li>
+    {%endfor%}
+</ul>
 
+<form action="/users/{{user.id}}/posts/new" method="GET">
+    <button>Add Post</button>
+</form>
 
 <a href="/users">Homepage</a>
-
-
 
 
 {% endblock %}

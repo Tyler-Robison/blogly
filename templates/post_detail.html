@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+
+{% block title %} Post Detail {% endblock %}
+
+{% block main %}
+
+<h1>{{post.title}}</h1>
+
+<p>{{post.content}}</p>
+
+<form action="/posts/{{post.id}}/edit" method="GET">
+    <button>Edit Post</button>
+</form>
+
+<form action="/posts/{{post.id}}/delete" method="POST">
+    <button>Delete Post</button>
+</form>
+
+
+
+<a href="/users">Homepage</a>
+
+
+{% endblock %}

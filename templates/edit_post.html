@@ -1,0 +1,28 @@
+{% extends 'index.html' %}
+
+{% block title %} New user {% endblock %}
+
+{% block main %}
+
+<h1>Edit Post</h1>
+
+<form action="/posts/{{post.id}}/edit" method="POST">
+
+<label for="edit-title">Title</label>
+<input type="text" id="edit-title" value="{{post.title}}" name="edit-title">
+
+<label for="edit-content">Post Content</label>
+<input type="text" id="edit-content" value="{{post.content}}" name="edit-content">
+
+<button>Edit</button>
+<button formaction="/posts/{{post.id}}" formmethod="GET" >Cancel</button>
+</form>
+
+
+
+
+
+<a href="/users">Homepage</a>
+
+
+{% endblock %}
