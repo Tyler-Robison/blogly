@@ -102,8 +102,8 @@ class UserTestCase(TestCase):
         """Tests that we can add a post"""
         with app.test_client() as client:   
             resp = client.post('/users/1/posts/new', data={
-                'post-title': 'Please help my fish',
-                'post-content': 'He is drowning',
+                'post-title': 'Hiking trails',
+                'post-content': 'What are the best trails?',
                 'tags': ['1', '2']
             }, follow_redirects=True)    
 
@@ -111,8 +111,8 @@ class UserTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('Please help my fish', html)  
-            self.assertIn('He is drowning', html)  
+            self.assertIn('Hiking trails', html)  
+            self.assertIn('What are the best trails?', html)  
 
 
             
