@@ -16,12 +16,16 @@
 
 
     <p><b>Tags associated with this post</b></p>
-    <!-- need id for label and checkbox to increment, tie to tag.id -->
-    {%for tag in tags%}
-    <label for=""></label>
-    <input type="checkbox" id="">
+    <!-- need id, name and for label to increment, tie to tag.id -->
+    {%for tag in all_tags%}
+    <input type="checkbox" value="{{ tag.id }}" id="tag_{{ tag.id }}" name="tags"
+    {% if tag in post.tags_with_post %}checked{% endif %}>
+    <label for="checkbox{{tag.id}}">{{tag.tag_name}}</label>
+    <br>
+
     {%endfor%}
 
+    <br>
     <button>Edit</button>
     <button formaction="/posts/{{post.id}}" formmethod="GET">Cancel</button>
 </form>

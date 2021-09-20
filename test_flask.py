@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from app import app
-from models import db, User
+from models import db, User, Post, Tag, PostTag
 
 # Use test database and don't clutter tests with SQL
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly_test'
@@ -29,6 +29,11 @@ class UserTestCase(TestCase):
         db.session.add(user)
         db.session.commit()
 
+        tag1 = Tag(tag_name='Exercise')
+        tag2 = Tag(tag_name='Outdoors')
+        db.session.add_all([tag1, tag2])
+        db.session.commit()
+
     def tearDown(self):
         """Clean up any fouled transaction."""
 
@@ -37,17 +42,10 @@ class UserTestCase(TestCase):
     def test_homepage(self):
         with app.test_client() as client:
             resp = client.get("/")
-
-            self.assertEqual(resp.status_code, 302)
-            self.assertEqual(resp.location, 'http://localhost/users')
-
-    def test_follow_redirect(self):
-        with app.test_client() as client:
-            resp = client.get("/", follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h1>User List</h1>', html)
+            self.assertIn('<h1>Home Page</h1>', html)
 
 
     def test_users(self):
@@ -99,6 +97,23 @@ class UserTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h1>User List</h1>', html)
             self.assertNotIn('Bobby', html)
+
+    def test_add_post(self):
+        """Tests that we can add a post"""
+        with app.test_client() as client:   
+            resp = client.post('/users/1/posts/new', data={
+                'post-title': 'Please help my fish',
+                'post-content': 'He is drowning',
+                'tags': ['1', '2']
+            }, follow_redirects=True)    
+
+            resp = client.get('/posts/2')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Please help my fish', html)  
+            self.assertIn('He is drowning', html)  
+
 
             
 

@@ -16,6 +16,12 @@
         <label for="post-content">Content</label>
         <input type="text" id="post-content" name="post-content">
     </div>
+    {% for tag in tags %}
+    <div>
+        <input type="checkbox" value="{{ tag.id }}" id="checkbox{{tag.id}}" name="tags">
+        <label for="checkbox{{tag.id}}}">{{ tag.tag_name }}</label>
+    </div>
+    {%endfor%}
     <div>
         <button>Add Post</button>
     </div>

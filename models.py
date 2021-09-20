@@ -12,6 +12,8 @@ def connect_db(app):
     db.app = app
     db.init_app(app)
 
+default_pic = 'https://images.freeimages.com/images/large-previews/b3d/flowers-1375316.jpg'    
+
 class User(db.Model):
     """User model"""
 
@@ -30,7 +32,7 @@ class User(db.Model):
                     unique=True)   
 
     profile_pic = db.Column(db.String,
-                default='https://images.freeimages.com/images/large-previews/b3d/flowers-1375316.jpg')             
+                default=default_pic)             
 
     posts = db.relationship("Post", backref="user", cascade="all, delete-orphan")            
 
@@ -68,7 +70,7 @@ class User(db.Model):
             last_name = None
 
         if profile_pic == None:
-            profile_pic = 'https://images.freeimages.com/images/large-previews/b3d/flowers-1375316.jpg'
+            profile_pic = default_pic
         self.first_name = first_name
         self.last_name = last_name
         self.profile_pic = profile_pic
@@ -79,11 +81,7 @@ class User(db.Model):
     def delete_user(self):
         """Deletes current user"""
 
-        # 
-        # user = User.query.filter(User.id == self.id).first()
         db.session.delete(self)
-        print('*****************************************************************************')
-        print('deleting')
 
         db.session.commit()
 
@@ -110,13 +108,11 @@ class Post(db.Model):
 
     tags_with_post = db.relationship('Tag', 
                                     secondary='posts_tags',
-                                    backref='posts')
-
-    # post_tags = db.relationship("PostTag", backref="post", cascade="all, delete-orphan")                                        
+                                    backref='posts_with_tag')                                    
   
 
     @classmethod
-    def add_post(cls, title, content, posted_by):
+    def add_post(cls, title, content, posted_by, tags):
         """Adds a new post"""    
 
         if title == '':
@@ -125,18 +121,13 @@ class Post(db.Model):
         if content == '':
             content = None      
 
-                  
-
-        new_post = Post(title=title, content=content, posted_by=posted_by)
-
-        # import pdb
-        # pdb.set_trace() 
+        new_post = Post(title=title, content=content, posted_by=posted_by, tags_with_post=tags)
 
         db.session.add(new_post)
-        db.session.commit()    
+        db.session.commit()     
 
     
-    def edit_post(self, title, content):
+    def edit_post(self, title, content, tags):
         """Adds a new post"""    
 
         if title == '':
@@ -148,6 +139,7 @@ class Post(db.Model):
 
         self.title = title
         self.content = content
+        self.tags_with_post = tags
 
         db.session.add(self)
         db.session.commit()       
@@ -155,8 +147,7 @@ class Post(db.Model):
     def delete_post(self):
         """Deletes post"""    
 
-        post = Post.query.filter(Post.id == self.id).first()
-        db.session.delete(post)
+        db.session.delete(self)
 
         db.session.commit()
 
@@ -170,10 +161,6 @@ class Tag(db.Model):
                     autoincrement = True)
 
     tag_name = db.Column(db.Text, nullable=False, unique=True) 
-
-    posts_with_tag = db.relationship('Post', 
-                                    secondary='posts_tags',
-                                    backref='tags')
                          
 
     @classmethod
@@ -208,8 +195,7 @@ class Tag(db.Model):
     def delete_tag(self):
         """Deletes a tag"""  
 
-        tag = Tag.query.filter(Tag.id == self.id).first()
-        db.session.delete(tag)
+        db.session.delete(self)
 
         db.session.commit()  
 
@@ -219,17 +205,5 @@ class PostTag(db.Model):
     __tablename__ = 'posts_tags'
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-
     tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)
-
-
-
-
-
-
-
-
-
-    
-
 

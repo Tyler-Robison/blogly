@@ -3,6 +3,7 @@
 from flask import Flask, request, render_template, redirect, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, Post, Tag, PostTag
+from operator import attrgetter
 
 app = Flask(__name__)
 
@@ -14,20 +15,23 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 debug = DebugToolbarExtension(app)
 
 connect_db(app)
-# db.create_all()
 
 
 @app.route('/')
 def home_page():
     """Redirects to users page"""
 
-    return render_template('home.html')
+    posts = Post.query.all()
+    sorted_posts = sorted(posts, key=attrgetter('created_at'), reverse=True)
+
+    return render_template('home.html', posts=sorted_posts)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
     """Show 404 NOT FOUND page."""
 
-    return render_template('404.html'), 404    
+    return render_template('404.html'), 404
 
 
 @app.route('/users')
@@ -71,11 +75,7 @@ def user_detail(user_id):
     """Displays user details"""
 
     user = User.query.get_or_404(user_id)
-    # post_list = Post.get_posts(user_id)
     post_list = Post.query.filter(Post.posted_by == user_id).all()
-    # import pdb
-    # pdb.set_trace()
-
 
     return render_template('detail.html', user=user, post_list=post_list)
 
@@ -84,7 +84,7 @@ def user_detail(user_id):
 def edit_user(user_id):
     """Displays current user details and allows you to edit"""
 
-    user = User.query.filter(User.id == user_id).first()
+    user = User.query.get_or_404(user_id)
 
     return render_template('edit.html', user=user)
 
@@ -100,7 +100,7 @@ def process_edit_user(user_id):
 
     # import pdb
     # pdb.set_trace()
-    user = User.query.filter(User.id == user_id).first()
+    user = User.query.get_or_404(user_id)
 
     try:
         user.edit_user(first_name, last_name, profile_pic)
@@ -116,7 +116,7 @@ def process_edit_user(user_id):
 def delete_user(user_id):
     """Deletes the user"""
 
-    user = User.query.filter(User.id == user_id).first()
+    user = User.query.get_or_404(user_id)
     user.delete_user()
 
     return redirect('/users')
@@ -130,7 +130,9 @@ def add_post(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    return render_template('create_post.html', user=user)
+    tags = Tag.query.all()
+
+    return render_template('create_post.html', user=user, tags=tags)
 
 
 @app.route('/users/<user_id>/posts/new', methods=["POST"])
@@ -140,8 +142,14 @@ def process_add_post(user_id):
     title = request.form['post-title']
     content = request.form['post-content']
 
+    tag_list = request.form.getlist('tags')
+    tag_ids = [int(num) for num in tag_list]
+    tags = Tag.query.filter(Tag.id.in_(tag_ids)).all()
+    # import pdb
+    # pdb.set_trace()
+
     try:
-        Post.add_post(title, content, int(user_id))
+        Post.add_post(title, content, int(user_id), tags)
     except:
         db.session.rollback()
         flash('title and content must be filled in')
@@ -150,26 +158,28 @@ def process_add_post(user_id):
     flash('Post created!')
     return redirect('/users')
 
+
 @app.route('/posts/<post_id>')
 def show_post(post_id):
     """Displays title and content of post"""
 
-    
     post = Post.query.filter(Post.id == post_id).first()
-
     tags = post.tags_with_post
 
-    return render_template('post_detail.html', post=post, tags=tags)    
+    return render_template('post_detail.html', post=post, tags=tags)
+
 
 @app.route('/posts/<post_id>/edit')
 def edit_post(post_id):
     """Allows you to edit post"""
 
-    post = Post.query.filter(Post.id == post_id).first()
-
+    post = Post.query.get_or_404(post_id)
     tags = post.tags_with_post
 
-    return render_template('edit_post.html', post=post, tags=tags)
+    all_tags = Tag.query.all()
+
+    return render_template('edit_post.html', post=post, tags=tags, all_tags=all_tags)
+
 
 @app.route('/posts/<post_id>/edit', methods=["POST"])
 def process_edit_post(post_id):
@@ -178,43 +188,48 @@ def process_edit_post(post_id):
     title = request.form['edit-title']
     content = request.form['edit-content']
 
-    
-    post = Post.query.filter(Post.id == post_id).first()
+    tag_list = request.form.getlist('tags')
+    tag_ids = [int(num) for num in tag_list]
+    tags = Tag.query.filter(Tag.id.in_(tag_ids)).all()
+
+    post = Post.query.get_or_404(post_id)
 
     # import pdb
     # pdb.set_trace()
 
     try:
-        post.edit_post(title, content)
-    except:        
+        post.edit_post(title, content, tags)
+    except:
         db.session.rollback()
         flash('title and content must be filled in')
         return redirect(f'/posts/{post_id}/edit')
 
-    return redirect(f'/posts/{post_id}')    
+    return redirect(f'/posts/{post_id}')
+
 
 @app.route('/posts/<post_id>/delete', methods=["POST"])
 def delete_post(post_id):
     """Deletes a post"""
 
-    # Currently broken!!!!!!!!!!!!!!!!!!!
-    post = Post.query.filter(Post.id == post_id).first()
+    post = Post.query.get_or_404(post_id)
     post.delete_post()
 
-    #re-direct somewhere else
+    # re-direct somewhere else
     return redirect('/users')
 
-############################################# routes for tags 
+# routes for tags
 
-@app.route('/tags')   
+
+@app.route('/tags')
 def list_tags():
     """Lists all tags"""
 
     tags = Tag.list_tags()
 
-    return render_template('tags.html', tags=tags) 
+    return render_template('tags.html', tags=tags)
 
-@app.route('/tags/<tag_id>')   
+
+@app.route('/tags/<tag_id>')
 def tag_detail(tag_id):
     """Shows detail about a tag"""
 
@@ -222,20 +237,19 @@ def tag_detail(tag_id):
 
     posts = tag.posts_with_tag
 
-    # import pdb
-    # pdb.set_trace()
+    return render_template('tag_detail.html', tag=tag, posts=posts)
 
-    return render_template('tag_detail.html', tag=tag, posts=posts) 
 
 @app.route('/tags/new')
 def add_tag():
     """Adds a new tag"""
 
-    return render_template('new_tag.html')  
+    return render_template('new_tag.html')
 
-@app.route('/tags/new', methods=["POST"])  
+
+@app.route('/tags/new', methods=["POST"])
 def process_new_tag():
-    """Process new tag"""   
+    """Process new tag"""
 
     tag_name = request.form['new-tag']
 
@@ -244,42 +258,43 @@ def process_new_tag():
     except:
         db.session.rollback()
         flash('tag name must be filled in')
-        return redirect('/tags/new')    
+        return redirect('/tags/new')
 
     return redirect('/tags')
+
 
 @app.route('/tags/<tag_id>/edit')
 def edit_tag(tag_id):
     """Shows page to edit tag"""
 
-    tag = Tag.query.filter(Tag.id == int(tag_id)).first()
+    tag = Tag.query.get_or_404(tag_id)
 
-    return render_template('edit_tag.html', tag=tag)    
+    return render_template('edit_tag.html', tag=tag)
+
 
 @app.route('/tags/<tag_id>/edit', methods=["POST"])
 def process_edit_tag(tag_id):
     """Processes tag editing"""
 
-    tag = Tag.query.filter(Tag.id == int(tag_id)).first()
+    tag = Tag.query.get_or_404(tag_id)
 
     tag_name = request.form['edit-tag']
 
     try:
         tag.edit_tag(tag_name)
-    except:        
+    except:
         db.session.rollback()
         flash('tag name must be filled in')
         return redirect(f'/tags/{tag_id}/edit')
 
     return redirect('/tags')
 
+
 @app.route('/tags/<tag_id>/delete')
 def delete_tag(tag_id):
     """Deletes a tag"""
 
-    # broken!!!!!!!!!!!
-    tag = Tag.query.filter(Tag.id == int(tag_id)).first()
+    tag = Tag.query.get_or_404(tag_id)
     tag.delete_tag()
 
-
-    return redirect('/tags')    
+    return redirect('/tags')
