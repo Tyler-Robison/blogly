@@ -163,7 +163,7 @@ def process_add_post(user_id):
 def show_post(post_id):
     """Displays title and content of post"""
 
-    post = Post.query.filter(Post.id == post_id).first()
+    post = Post.query.get_or_404(post_id)
     tags = post.tags_with_post
 
     return render_template('post_detail.html', post=post, tags=tags)
@@ -214,7 +214,6 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     post.delete_post()
 
-    # re-direct somewhere else
     return redirect('/users')
 
 # routes for tags
