@@ -80,8 +80,8 @@ class User(db.Model):
         """Deletes current user"""
 
         # 
-        user = User.query.filter(User.id == self.id).first()
-        db.session.delete(user)
+        # user = User.query.filter(User.id == self.id).first()
+        db.session.delete(self)
         print('*****************************************************************************')
         print('deleting')
 
