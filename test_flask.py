@@ -131,6 +131,9 @@ class UserTestCase(TestCase):
             self.assertNotIn('content example1', html)  
             #Should be getting re-directed to my 404 content not found page.
 
+            # self.assertIn('Page Not Found', html)
+            # If we do get re-directed then this line should pass. 
+
 
             
 
