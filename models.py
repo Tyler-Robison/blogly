@@ -82,6 +82,8 @@ class User(db.Model):
         # 
         user = User.query.filter(User.id == self.id).first()
         db.session.delete(user)
+        print('*****************************************************************************')
+        print('deleting')
 
         db.session.commit()
 
@@ -106,6 +108,11 @@ class Post(db.Model):
 
     posted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  
 
+    tags_with_post = db.relationship('Tag', 
+                                    secondary='posts_tags',
+                                    backref='posts')
+
+    # post_tags = db.relationship("PostTag", backref="post", cascade="all, delete-orphan")                                        
   
 
     @classmethod
@@ -148,9 +155,80 @@ class Post(db.Model):
     def delete_post(self):
         """Deletes post"""    
 
-        Post.query.filter(Post.id == self.id).delete()
+        post = Post.query.filter(Post.id == self.id).first()
+        db.session.delete(post)
 
         db.session.commit()
+
+class Tag(db.Model):
+    """Tag Model"""
+
+    __tablename__ = 'tags'
+
+    id = db.Column(db.Integer,
+                    primary_key = True,
+                    autoincrement = True)
+
+    tag_name = db.Column(db.Text, nullable=False, unique=True) 
+
+    posts_with_tag = db.relationship('Post', 
+                                    secondary='posts_tags',
+                                    backref='tags')
+                         
+
+    @classmethod
+    def list_tags(cls):
+        """lists tags"""  
+
+        return cls.query.all()   
+
+    @classmethod
+    def add_tag(cls, tag_name):
+        """Adds a new Tag"""
+
+        if tag_name == '':
+            tag_name = None     
+
+        new_tag = Tag(tag_name=tag_name)
+
+        db.session.add(new_tag)
+        db.session.commit()
+        
+    def edit_tag(self, tag_name):
+        """Edits a tag"""
+
+        if tag_name == '':
+            tag_name = None      
+
+        self.tag_name = tag_name
+
+        db.session.add(self)
+        db.session.commit()    
+
+    def delete_tag(self):
+        """Deletes a tag"""  
+
+        tag = Tag.query.filter(Tag.id == self.id).first()
+        db.session.delete(tag)
+
+        db.session.commit()  
+
+class PostTag(db.Model):
+    """A PostTag joins together a Post and a Tag"""
+
+    __tablename__ = 'posts_tags'
+
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+
+
+
+
+
+
+
+
 
     
 

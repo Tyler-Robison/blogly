@@ -21,3 +21,14 @@ CREATE TABLE posts (
     created_at TEXT NOT NULL,
     posted_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE tags (
+    id SERIAL PRIMARY KEY,
+    tag_name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE posts_tags (
+    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+    tag_id INTEGER REFERENCES tags(id),
+    PRIMARY KEY(post_id, tag_id)
+);

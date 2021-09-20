@@ -1,0 +1,25 @@
+{% extends 'index.html' %}
+
+{% block title %} New user {% endblock %}
+
+{% block main %}
+
+<h1>Edit Tag</h1>
+
+<form action="/tags/{{tag.id}}/edit" method="POST">
+
+<label for="edit-tag">Title</label>
+<input type="text" id="edit-tag" value="{{tag.tag_name}}" name="edit-tag">
+
+<button>Edit</button>
+<button formaction="/tags/{{tag.id}}" formmethod="GET" >Cancel</button>
+</form>
+
+
+
+
+
+<a href="/tags">Tags page</a>
+
+
+{% endblock %}

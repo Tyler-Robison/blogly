@@ -1,0 +1,30 @@
+{% extends 'index.html' %}
+
+{% block title %} Post Detail {% endblock %}
+
+{% block main %}
+
+<h1>{{tag.tag_name}}</h1>
+
+<!-- list of posts associated with this tag -->
+
+<p><b>Posts containing the tag: </b>{{tag.tag_name}}</p>
+<ul>
+    {%for post in posts%}
+
+    <li><a href="/posts/{{post.id}}">{{post.title}}</a></li>
+
+    {%endfor%}
+</ul>
+
+<form action="/tags/{{tag.id}}/edit">
+    <button>Edit Tag</button>
+    <button formaction="/tags/{{tag.id}}/delete">Delete Tag</button>
+</form>
+
+
+
+<a href="/">Homepage</a>
+
+
+{% endblock %}
